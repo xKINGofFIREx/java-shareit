@@ -12,7 +12,7 @@ import java.util.Map;
 public class InMemoryUserStorage implements UserStorage {
     private int newUserId = 1;
     private final Map<Integer, UserDto> users = new HashMap<>();
-    private final static InMemoryUserStorage instance = new InMemoryUserStorage();
+    private static final InMemoryUserStorage instance = new InMemoryUserStorage();
 
     public static InMemoryUserStorage getInstance() {
         return instance;
