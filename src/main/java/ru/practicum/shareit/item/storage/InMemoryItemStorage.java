@@ -9,8 +9,8 @@ import ru.practicum.shareit.user.storage.InMemoryUserStorage;
 
 import javax.validation.ValidationException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -67,14 +67,14 @@ public class InMemoryItemStorage implements ItemStorage {
     }
 
     @Override
-    public Collection<ItemDto> findAll(int sharerId) {
+    public List<ItemDto> findAll(int sharerId) {
         return items.values()
                 .stream()
                 .filter(i -> i.getOwner().getId() == sharerId)
                 .collect(Collectors.toList());
     }
 
-    public Collection<ItemDto> getItemByText(String text) {
+    public List<ItemDto> getItemByText(String text) {
         if (text.equals(""))
             return new ArrayList<>();
         return items.values()

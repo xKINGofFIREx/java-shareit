@@ -4,9 +4,9 @@ import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exception.InvalidArgumentException;
 import ru.practicum.shareit.user.dto.UserDto;
 
-import javax.validation.ValidationException;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Repository
@@ -51,8 +51,8 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Collection<UserDto> findAll() {
-        return users.values();
+    public List<UserDto> findAll() {
+        return new ArrayList<>(users.values());
     }
 
     private void isEmailExists(UserDto userDto) throws InvalidArgumentException {

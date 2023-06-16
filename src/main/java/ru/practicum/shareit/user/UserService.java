@@ -6,7 +6,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.storage.InMemoryUserStorage;
 import ru.practicum.shareit.user.storage.UserStorage;
 
-import java.util.Collection;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -33,7 +33,7 @@ public class UserService {
         userStorage.deleteUser(userId);
     }
 
-    public Collection<UserDto> findAll() {
+    public List<UserDto> findAll() {
         return userStorage.findAll();
     }
 }

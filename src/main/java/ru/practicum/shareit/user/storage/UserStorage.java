@@ -3,7 +3,7 @@ package ru.practicum.shareit.user.storage;
 import ru.practicum.shareit.exception.InvalidArgumentException;
 import ru.practicum.shareit.user.dto.UserDto;
 
-import java.util.Collection;
+import java.util.List;
 
 public interface UserStorage {
     UserDto getUser(int userId);
@@ -14,5 +14,5 @@ public interface UserStorage {
 
     void deleteUser(int userId);
 
-    Collection<UserDto> findAll();
+    List<UserDto> findAll();
 }

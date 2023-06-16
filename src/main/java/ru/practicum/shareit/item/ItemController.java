@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 
-import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/items")
@@ -39,12 +39,12 @@ public class ItemController {
     }
 
     @GetMapping
-    public Collection<ItemDto> findAll(@RequestHeader("X-Sharer-User-Id") int sharerId) {
+    public List<ItemDto> findAll(@RequestHeader("X-Sharer-User-Id") int sharerId) {
         return itemService.findAll(sharerId);
     }
 
     @GetMapping("/search")
-    public Collection<ItemDto> getItemByText(@RequestParam String text) {
+    public List<ItemDto> getItemByText(@RequestParam String text) {
         return itemService.getItemByText(text);
     }
 }

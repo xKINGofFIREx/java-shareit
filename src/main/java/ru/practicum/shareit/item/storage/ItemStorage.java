@@ -3,7 +3,7 @@ package ru.practicum.shareit.item.storage;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 
-import java.util.Collection;
+import java.util.List;
 
 public interface ItemStorage {
     ItemDto getItem(int itemId);
@@ -14,5 +14,5 @@ public interface ItemStorage {
 
     void deleteItem(int itemId);
 
-    Collection<ItemDto> findAll(int sharerId);
+    List<ItemDto> findAll(int sharerId);
 }

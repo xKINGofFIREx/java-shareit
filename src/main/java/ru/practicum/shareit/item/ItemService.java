@@ -6,7 +6,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.storage.InMemoryItemStorage;
 import ru.practicum.shareit.item.storage.ItemStorage;
 
-import java.util.Collection;
+import java.util.List;
 
 @Service
 public class ItemService {
@@ -32,11 +32,11 @@ public class ItemService {
         itemStorage.deleteItem(itemId);
     }
 
-    public Collection<ItemDto> findAll(int sharerId) {
+    public List<ItemDto> findAll(int sharerId) {
         return itemStorage.findAll(sharerId);
     }
 
-    public Collection<ItemDto> getItemByText(String text) {
+    public List<ItemDto> getItemByText(String text) {
         return ((InMemoryItemStorage) itemStorage).getItemByText(text);
     }
 }

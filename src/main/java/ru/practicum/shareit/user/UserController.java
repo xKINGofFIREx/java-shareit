@@ -6,7 +6,7 @@ import ru.practicum.shareit.exception.InvalidArgumentException;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.Valid;
-import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -39,7 +39,7 @@ public class UserController {
     }
 
     @GetMapping
-    public Collection<UserDto> findAll() {
+    public List<UserDto> findAll() {
         return userService.findAll();
     }
 }
