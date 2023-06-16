@@ -10,6 +10,7 @@ import java.util.List;
 @RequestMapping("/items")
 public class ItemController {
     private final ItemService itemService;
+    private final String SHARER_HEADER = "X-Sharer-User-Id";
 
     public ItemController(ItemService itemService) {
         this.itemService = itemService;
@@ -22,7 +23,7 @@ public class ItemController {
 
     @PostMapping
     public ItemDto addItem(@RequestBody ItemDto itemDto,
-                           @RequestHeader("X-Sharer-User-Id") int sharerId) throws NotFoundException {
+                           @RequestHeader(SHARER_HEADER) int sharerId) throws NotFoundException {
         return itemService.addItem(itemDto, sharerId);
     }
 
@@ -34,12 +35,12 @@ public class ItemController {
     @PatchMapping("/{itemId}")
     public ItemDto patchItem(@PathVariable int itemId,
                              @RequestBody ItemDto itemDto,
-                             @RequestHeader("X-Sharer-User-Id") int sharerId) throws NotFoundException {
+                             @RequestHeader(SHARER_HEADER) int sharerId) throws NotFoundException {
         return itemService.patchItem(itemId, itemDto, sharerId);
     }
 
     @GetMapping
-    public List<ItemDto> findAll(@RequestHeader("X-Sharer-User-Id") int sharerId) {
+    public List<ItemDto> findAll(@RequestHeader(SHARER_HEADER) int sharerId) {
         return itemService.findAll(sharerId);
     }
 
