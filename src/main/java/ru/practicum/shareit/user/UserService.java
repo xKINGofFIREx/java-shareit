@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user;
 
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.InvalidArgumentException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.storage.InMemoryUserStorage;
 import ru.practicum.shareit.user.storage.UserStorage;
@@ -20,11 +21,11 @@ public class UserService {
         return userStorage.getUser(userId);
     }
 
-    public UserDto addUser(UserDto userDto) {
+    public UserDto addUser(UserDto userDto) throws InvalidArgumentException {
         return userStorage.addUser(userDto);
     }
 
-    public UserDto patchUser(int userId, UserDto userDto) {
+    public UserDto patchUser(int userId, UserDto userDto) throws InvalidArgumentException {
         return userStorage.patchUser(userId, userDto);
     }
 

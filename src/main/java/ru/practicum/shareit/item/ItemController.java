@@ -1,11 +1,9 @@
 package ru.practicum.shareit.item;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 
-import javax.validation.ValidationException;
 import java.util.Collection;
 
 @RestController
@@ -48,17 +46,5 @@ public class ItemController {
     @GetMapping("/search")
     public Collection<ItemDto> getItemByText(@RequestParam String text) {
         return itemService.getItemByText(text);
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Exception handleNotFoundException(NotFoundException e) {
-        return new Exception("error", e);
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Exception handleValidationException(ValidationException e) {
-        return new Exception("error", e);
     }
 }

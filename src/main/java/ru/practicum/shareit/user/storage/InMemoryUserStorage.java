@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user.storage;
 
 import org.springframework.stereotype.Repository;
+import ru.practicum.shareit.exception.InvalidArgumentException;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.ValidationException;
@@ -24,7 +25,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public UserDto addUser(UserDto userDto) {
+    public UserDto addUser(UserDto userDto) throws InvalidArgumentException {
         isEmailExists(userDto);
         userDto.setId(newUserId++);
         users.put(userDto.getId(), userDto);
@@ -32,7 +33,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public UserDto patchUser(int userId, UserDto userDto) {
+    public UserDto patchUser(int userId, UserDto userDto) throws InvalidArgumentException {
         UserDto userToPatch = users.get(userId);
 
         if (!userToPatch.getEmail().equals(userDto.getEmail()))
@@ -54,12 +55,12 @@ public class InMemoryUserStorage implements UserStorage {
         return users.values();
     }
 
-    private void isEmailExists(UserDto userDto) {
+    private void isEmailExists(UserDto userDto) throws InvalidArgumentException {
         boolean isEmailExists = users.values()
                 .stream()
                 .anyMatch(u -> u.getEmail().equals(userDto.getEmail()));
 
         if (isEmailExists)
-            throw new ValidationException("Пользователь с такой почтой уже существует");
+            throw new InvalidArgumentException("Пользователь с такой почтой уже существует");
     }
 }

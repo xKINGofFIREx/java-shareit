@@ -1,16 +1,15 @@
 package ru.practicum.shareit.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.exception.InvalidArgumentException;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.Valid;
-import javax.validation.ValidationException;
 import java.util.Collection;
 
 @RestController
-@RequestMapping(path = "/users")
+@RequestMapping("/users")
 public class UserController {
     private final UserService userService;
 
@@ -25,12 +24,12 @@ public class UserController {
     }
 
     @PostMapping
-    public UserDto addUser(@RequestBody @Valid UserDto userDto) {
+    public UserDto addUser(@RequestBody @Valid UserDto userDto) throws InvalidArgumentException {
         return userService.addUser(userDto);
     }
 
     @PatchMapping("/{userId}")
-    public UserDto patchUser(@PathVariable int userId, @RequestBody UserDto userDto) {
+    public UserDto patchUser(@PathVariable int userId, @RequestBody UserDto userDto) throws InvalidArgumentException {
         return userService.patchUser(userId, userDto);
     }
 
@@ -42,11 +41,5 @@ public class UserController {
     @GetMapping
     public Collection<UserDto> findAll() {
         return userService.findAll();
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Exception handleValidationException(ValidationException e) {
-        return new Exception("error", e);
     }
 }
