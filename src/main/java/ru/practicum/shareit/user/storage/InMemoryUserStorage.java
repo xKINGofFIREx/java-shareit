@@ -11,8 +11,8 @@ import java.util.Map;
 
 @Repository
 public class InMemoryUserStorage implements UserStorage {
-    private int newUserId = 1;
-    private final Map<Integer, UserDto> users = new HashMap<>();
+    private long newUserId = 1;
+    private final Map<Long, UserDto> users = new HashMap<>();
     private static final InMemoryUserStorage instance = new InMemoryUserStorage();
 
     public static InMemoryUserStorage getInstance() {
@@ -20,7 +20,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public UserDto getUser(int userId) {
+    public UserDto getUser(long userId) {
         return users.get(userId);
     }
 
@@ -33,7 +33,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public UserDto patchUser(int userId, UserDto userDto) throws InvalidArgumentException {
+    public UserDto patchUser(long userId, UserDto userDto) throws InvalidArgumentException {
         UserDto userToPatch = users.get(userId);
 
         if (!userToPatch.getEmail().equals(userDto.getEmail()))
@@ -46,7 +46,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void deleteUser(int userId) {
+    public void deleteUser(long userId) {
         users.remove(userId);
     }
 

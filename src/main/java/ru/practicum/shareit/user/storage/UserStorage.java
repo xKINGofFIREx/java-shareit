@@ -6,13 +6,13 @@ import ru.practicum.shareit.user.dto.UserDto;
 import java.util.List;
 
 public interface UserStorage {
-    UserDto getUser(int userId);
+    UserDto getUser(long userId);
 
     UserDto addUser(UserDto userDto) throws InvalidArgumentException;
 
-    UserDto patchUser(int userId, UserDto userDto) throws InvalidArgumentException;
+    UserDto patchUser(long userId, UserDto userDto) throws InvalidArgumentException;
 
-    void deleteUser(int userId);
+    void deleteUser(long userId);
 
     List<UserDto> findAll();
 }

@@ -1,42 +1,132 @@
 package ru.practicum.shareit.item;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.mapper.BookingMapper;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingStatus;
+import ru.practicum.shareit.comment.Comment;
+import ru.practicum.shareit.comment.CommentRepository;
+import ru.practicum.shareit.comment.dto.CommentDto;
+import ru.practicum.shareit.comment.mapper.CommentMapper;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.storage.InMemoryItemStorage;
-import ru.practicum.shareit.item.storage.ItemStorage;
+import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.model.User;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class ItemService {
-    private final ItemStorage itemStorage;
+    private final ItemRepository itemRepository;
+    private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
 
-    public ItemService(ItemStorage itemStorage) {
-        this.itemStorage = itemStorage;
+    public ItemDto getItem(long itemId, long userId) throws NotFoundException {
+        ItemDto itemDto = ItemMapper.toItemDto(itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещи с таким номером не существует")));
+
+        if (userId == itemDto.getOwner().getId())
+            setBookings(itemId, itemDto);
+
+        itemDto.setComments(CommentMapper.toCommentDtos(
+                commentRepository.findAllCommentsByItemId(itemId)
+                        .orElse(new ArrayList<>())));
+        return itemDto;
     }
 
-    public ItemDto getItem(int itemId) {
-        return itemStorage.getItem(itemId);
+    public ItemDto addItem(ItemDto itemDto, long sharerId) throws NotFoundException {
+        Item item = ItemMapper.toItem(itemDto);
+
+        User owner = userRepository.findById(sharerId)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        item.setOwner(owner);
+
+        return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
-    public ItemDto addItem(ItemDto itemDto, int sharerId) throws NotFoundException {
-        return itemStorage.addItem(itemDto, sharerId);
+    public ItemDto patchItem(long itemId, ItemDto itemDto, long sharerId) throws NotFoundException {
+        Item itemToPatch = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь с таким номером не найдена"));
+        if (!userRepository.existsById(sharerId))
+            throw new NotFoundException("Пользователь не найден");
+        if (itemToPatch.getOwner().getId() != sharerId)
+            throw new NotFoundException("Использован другой пользователь");
+
+        if (itemDto.getName() != null)
+            itemToPatch.setName(itemDto.getName());
+        if (itemDto.getDescription() != null)
+            itemToPatch.setDescription(itemDto.getDescription());
+        if (itemDto.getAvailable() != null)
+            itemToPatch.setAvailable(itemDto.getAvailable());
+
+        return ItemMapper.toItemDto(itemRepository.save(itemToPatch));
     }
 
-    public ItemDto patchItem(int itemId, ItemDto itemDto, int sharerId) throws NotFoundException {
-        return itemStorage.patchItem(itemId, itemDto, sharerId);
+    public void deleteItem(long itemId) {
+        itemRepository.deleteById(itemId);
     }
 
-    public void deleteItem(int itemId) {
-        itemStorage.deleteItem(itemId);
-    }
+    public List<ItemDto> findAll(long sharerId) {
+        List<ItemDto> itemDtos = ItemMapper.toItemDtos(itemRepository.findAllByOwnerId(sharerId));
 
-    public List<ItemDto> findAll(int sharerId) {
-        return itemStorage.findAll(sharerId);
+        for (ItemDto itemDto : itemDtos) {
+            setBookings(itemDto.getId(), itemDto);
+            itemDto.setComments(CommentMapper.toCommentDtos(
+                    commentRepository.findAllCommentsByItemId(itemDto.getId())
+                            .orElse(new ArrayList<>())));
+        }
+
+        return itemDtos.stream()
+                .sorted(Comparator.comparing(ItemDto::getId))
+                .collect(Collectors.toList());
     }
 
     public List<ItemDto> getItemByText(String text) {
-        return ((InMemoryItemStorage) itemStorage).getItemByText(text);
+        if (text.equals(""))
+            return new ArrayList<>();
+        return ItemMapper.toItemDtos(itemRepository.findAll())
+                .stream()
+                .filter(i -> i.getDescription().toLowerCase().contains(text.toLowerCase()) && i.getAvailable())
+                .collect(Collectors.toList());
+    }
+
+    public CommentDto createComment(long itemId, CommentDto commentDto, long bookerId) throws NotFoundException, ValidationException {
+        Comment comment = CommentMapper.toComment(commentDto);
+        comment.setItem(itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь с таким номером не найдена")));
+
+        List<Booking> bookings = itemRepository.findBookingByItemIdAndBookerId(itemId, bookerId)
+                .orElseThrow(() -> new NotFoundException("Букинга не существует"));
+
+        Booking booking = bookings.get(0);
+        if (booking.getStart().isAfter(LocalDateTime.now())
+                || booking.getStatus() != BookingStatus.APPROVED)
+            throw new ValidationException("Комментарий не может быть написан");
+
+        comment.setAuthor(booking.getBooker());
+        return CommentMapper.toCommentDto(commentRepository.save(comment));
+    }
+
+    private void setBookings(long itemId, ItemDto itemDto) {
+        List<Booking> nextBooking = itemRepository.findNextBookingByItemId(itemId, LocalDateTime.now())
+                .orElse(null);
+        List<Booking> lastBooking = itemRepository.findLastBookingByItemId(itemId, LocalDateTime.now())
+                .orElse(null);
+
+        if (nextBooking != null && nextBooking.size() > 0
+                && nextBooking.get(0).getStatus() == BookingStatus.APPROVED)
+            itemDto.setNextBooking(BookingMapper.toBookingDto(nextBooking.get(0)));
+        if (lastBooking != null && lastBooking.size() > 0
+                && lastBooking.get(0).getStatus() == BookingStatus.APPROVED)
+            itemDto.setLastBooking(BookingMapper.toBookingDto(lastBooking.get(lastBooking.size() - 1)));
     }
 }
