@@ -6,13 +6,13 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import java.util.List;
 
 public interface ItemStorage {
-    ItemDto getItem(int itemId);
+    ItemDto getItem(long itemId);
 
-    ItemDto addItem(ItemDto itemDto, int sharerId) throws NotFoundException;
+    ItemDto addItem(ItemDto itemDto, long sharerId) throws NotFoundException;
 
-    ItemDto patchItem(int itemId, ItemDto itemDto, int sharerId) throws NotFoundException;
+    ItemDto patchItem(long itemId, ItemDto itemDto, long sharerId) throws NotFoundException;
 
-    void deleteItem(int itemId);
+    void deleteItem(long itemId);
 
-    List<ItemDto> findAll(int sharerId);
+    List<ItemDto> findAll(long sharerId);
 }

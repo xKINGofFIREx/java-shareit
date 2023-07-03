@@ -17,16 +17,16 @@ import java.util.stream.Collectors;
 @Repository
 public class InMemoryItemStorage implements ItemStorage {
     private int newItemId = 1;
-    private final Map<Integer, ItemDto> items = new HashMap<>();
+    private final Map<Long, ItemDto> items = new HashMap<>();
     private final InMemoryUserStorage users = InMemoryUserStorage.getInstance();
 
     @Override
-    public ItemDto getItem(int itemId) {
+    public ItemDto getItem(long itemId) {
         return items.get(itemId);
     }
 
     @Override
-    public ItemDto addItem(ItemDto itemDto, int sharerId) throws NotFoundException {
+    public ItemDto addItem(ItemDto itemDto, long sharerId) throws NotFoundException {
         UserDto userDto = users.getUser(sharerId);
         if (userDto == null)
             throw new NotFoundException("Пользователь не найден");
@@ -43,7 +43,7 @@ public class InMemoryItemStorage implements ItemStorage {
     }
 
     @Override
-    public ItemDto patchItem(int itemId, ItemDto itemDto, int sharerId) throws NotFoundException {
+    public ItemDto patchItem(long itemId, ItemDto itemDto, long sharerId) throws NotFoundException {
         UserDto userDto = users.getUser(sharerId);
 
         if (userDto == null)
@@ -62,12 +62,12 @@ public class InMemoryItemStorage implements ItemStorage {
     }
 
     @Override
-    public void deleteItem(int itemId) {
+    public void deleteItem(long itemId) {
         items.remove(itemId);
     }
 
     @Override
-    public List<ItemDto> findAll(int sharerId) {
+    public List<ItemDto> findAll(long sharerId) {
         return items.values()
                 .stream()
                 .filter(i -> i.getOwner().getId() == sharerId)
