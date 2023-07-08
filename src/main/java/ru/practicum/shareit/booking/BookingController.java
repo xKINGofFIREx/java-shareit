@@ -38,14 +38,18 @@ public class BookingController {
 
     @GetMapping
     public List<BookingDto> getCurrentUserBookings(@RequestParam(defaultValue = "ALL", required = false) State state,
-                                                   @RequestHeader(SHARER_HEADER) long userId) throws NotFoundException {
-        return bookingService.getCurrentUserBookings(state, userId);
+                                                   @RequestHeader(SHARER_HEADER) long userId,
+                                                   @RequestParam(required = false) Integer from,
+                                                   @RequestParam(required = false) Integer size) throws NotFoundException, ValidationException {
+        return bookingService.getCurrentUserBookings(state, userId, from, size);
     }
 
     @GetMapping("/owner")
     public List<BookingDto> getOwnerBookings(@RequestParam(defaultValue = "ALL", required = false) State state,
-                                             @RequestHeader(SHARER_HEADER) long ownerId) throws NotFoundException {
-        return bookingService.getOwnerBookings(state, ownerId);
+                                             @RequestHeader(SHARER_HEADER) long ownerId,
+                                             @RequestParam(required = false) Integer from,
+                                             @RequestParam(required = false) Integer size) throws NotFoundException, ValidationException {
+        return bookingService.getOwnerBookings(state, ownerId, from, size);
     }
 
 }

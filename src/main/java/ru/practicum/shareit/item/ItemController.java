@@ -42,13 +42,17 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> findAll(@RequestHeader(SHARER_HEADER) long sharerId) {
-        return itemService.findAll(sharerId);
+    public List<ItemDto> findAll(@RequestHeader(SHARER_HEADER) long sharerId,
+                                 @RequestParam(required = false) Integer from,
+                                 @RequestParam(required = false) Integer size) throws ValidationException {
+        return itemService.findAll(sharerId, from, size);
     }
 
     @GetMapping("/search")
-    public List<ItemDto> getItemByText(@RequestParam String text) {
-        return itemService.getItemByText(text);
+    public List<ItemDto> getItemByText(@RequestParam String text,
+                                       @RequestParam(required = false) Integer from,
+                                       @RequestParam(required = false) Integer size) throws ValidationException {
+        return itemService.getItemByText(text, from, size);
     }
 
     @PostMapping("{itemId}/comment")

@@ -84,62 +84,70 @@ public class BookingService {
         return BookingMapper.toBookingDto(booking);
     }
 
-    public List<BookingDto> getCurrentUserBookings(State state, long userId) throws NotFoundException {
+    public List<BookingDto> getCurrentUserBookings(State state, long userId,
+                                                   Integer from, Integer size) throws NotFoundException, ValidationException {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователя с таким номером не существует"));
 
-        List<Long> itemIds = bookingRepository
-                .findBookingsByBooker_Id(userId)
+        List<Long> bookingIds = bookingRepository.findBookingsByBookerId(userId)
                 .stream()
-                .map(Booking::getItem)
-                .map(Item::getId)
+                .map(Booking::getId)
                 .collect(Collectors.toList());
 
-        return BookingMapper.toBookingDtos(getBookingsByState(itemIds, state));
+        return BookingMapper.toBookingDtos(getBookingsByState(bookingIds, state, from, size));
     }
 
-    public List<BookingDto> getOwnerBookings(State state, long ownerId) throws NotFoundException {
+    public List<BookingDto> getOwnerBookings(State state, long ownerId,
+                                             Integer from, Integer size) throws NotFoundException, ValidationException {
         userRepository.findById(ownerId)
                 .orElseThrow(() -> new NotFoundException("Владельца вещи с таким номером не существует"));
 
-        List<Long> itemIds = itemRepository
-                .findAllByOwnerId(ownerId)
+        List<Long> bookingIds = bookingRepository.findBookingsByItemOwnerId(ownerId)
                 .stream()
-                .map(Item::getId)
+                .map(Booking::getId)
                 .collect(Collectors.toList());
 
-        return BookingMapper.toBookingDtos(getBookingsByState(itemIds, state));
+        return BookingMapper.toBookingDtos(getBookingsByState(bookingIds, state, from, size));
     }
 
-    private List<Booking> getBookingsByState(List<Long> itemIds, State state) {
+    private List<Booking> getBookingsByState(List<Long> bookingIds, State state,
+                                             Integer from, Integer size) throws ValidationException {
+
+        if (from != null && from < 0 || size != null && size < 1)
+            throw new ValidationException("Ошибка пагинации");
+
         List<Booking> bookings;
         LocalDateTime now = LocalDateTime.now();
+
         switch (state) {
             case CURRENT:
-                bookings = bookingRepository
-                        .findBookingsByItemIdsCurrent(itemIds, now);
+                bookings = bookingRepository.findBookingsByItemIdsCurrent(bookingIds, now);
                 break;
             case PAST:
-                bookings = bookingRepository
-                        .findBookingsByItemIdsPast(itemIds, now);
+                bookings = bookingRepository.findBookingsByItemIdsPast(bookingIds, now);
                 break;
             case FUTURE:
-                bookings = bookingRepository.findBookingsByItemIdsFuture(itemIds, now);
+                bookings = bookingRepository.findBookingsByItemIdsFuture(bookingIds, now);
                 break;
             case WAITING:
-                bookings = bookingRepository.findBookingsByItemIdsAndStatus(itemIds, BookingStatus.WAITING);
+                bookings = bookingRepository.findBookingsByItemIdsAndStatus(bookingIds, BookingStatus.WAITING);
                 break;
             case REJECTED:
-                bookings = bookingRepository
-                        .findBookingsByItemIdsAndStatus(itemIds, BookingStatus.REJECTED);
+                bookings = bookingRepository.findBookingsByItemIdsAndStatus(bookingIds, BookingStatus.REJECTED);
                 break;
             default:
-                bookings = bookingRepository
-                        .findBookingsByItemIds(itemIds);
+                bookings = bookingRepository.findBookingsByItemIds(bookingIds);
         }
+
+        if (from == null || size == null)
+            return bookings.stream()
+                    .sorted(Comparator.comparing(Booking::getStart).reversed())
+                    .collect(Collectors.toList());
 
         return bookings.stream()
                 .sorted(Comparator.comparing(Booking::getStart).reversed())
+                .skip(from)
+                .limit(size)
                 .collect(Collectors.toList());
     }
 }
