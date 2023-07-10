@@ -55,7 +55,7 @@ public class ItemController {
         return itemService.getItemByText(text, from, size);
     }
 
-    @PostMapping("{itemId}/comment")
+    @PostMapping("/{itemId}/comment")
     public CommentDto createComment(@PathVariable long itemId,
                                     @RequestBody @Valid CommentDto commentDto,
                                     @RequestHeader(SHARER_HEADER) long sharerId) throws NotFoundException, ValidationException {
