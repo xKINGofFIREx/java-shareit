@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import ru.practicum.shareit.exception.ControllerExceptionHandler;
 import ru.practicum.shareit.exception.InvalidArgumentException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -30,7 +31,9 @@ public class UserControllerTest {
     public void initialize() {
         userService = Mockito.mock(UserService.class);
         UserController userController = new UserController(userService);
-        mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(userController)
+                .setControllerAdvice(ControllerExceptionHandler.class)
+                .build();
         mapper = new ObjectMapper();
     }
 
@@ -46,6 +49,13 @@ public class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id", Matchers.is(userDto.getId()), Long.class))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name", Matchers.is(userDto.getName())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.email", Matchers.is(userDto.getEmail())));
+
+        Mockito
+                .when(userService.getUser(99))
+                .thenThrow(NotFoundException.class);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/users/99"))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     @Test
@@ -65,6 +75,19 @@ public class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id", Matchers.is(userDto.getId()), Long.class))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name", Matchers.is(userDto.getName())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.email", Matchers.is(userDto.getEmail())));
+
+        UserDto userWithSameEmail = new UserDto(2, "test", "test@mail.ru");
+
+        Mockito
+                .when(userService.addUser(userWithSameEmail))
+                .thenThrow(InvalidArgumentException.class);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/users")
+                        .content(mapper.writeValueAsString(userWithSameEmail))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isInternalServerError());
     }
 
     @Test

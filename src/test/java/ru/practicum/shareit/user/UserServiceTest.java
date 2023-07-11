@@ -81,6 +81,19 @@ public class UserServiceTest {
         UserDto userDto = UserMapper.toUserDto(user);
         UserDto userDto1 = UserMapper.toUserDto(user1);
         Assertions.assertEquals(userDto1, userService.patchUser(1L, userDto));
+
+        User patchWithSameEmail = new User();
+        user.setId(1);
+        user.setEmail("test@test.ru");
+        user.setName("test");
+
+
+        Mockito
+                .when(userRepository.countAllByEmail(patchWithSameEmail.getEmail()))
+                .thenReturn(2);
+
+        Assertions.assertThrows(InvalidArgumentException.class,
+                () -> userService.patchUser(1, UserMapper.toUserDto(patchWithSameEmail)));
     }
 
     @Test

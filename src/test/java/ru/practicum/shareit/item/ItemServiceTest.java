@@ -127,6 +127,7 @@ public class ItemServiceTest {
         List<ItemDto> itemDtos = ItemMapper.toItemDtos(Arrays.asList(item, item1));
 
         Assertions.assertEquals(itemDtos, itemService.findAll(1L, null, null));
+        Assertions.assertThrows(ValidationException.class, () -> itemService.findAll(1L, 0, 0));
     }
 
     @Test

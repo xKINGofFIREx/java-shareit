@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.exception.ControllerExceptionHandler;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
@@ -29,7 +30,9 @@ public class BookingControllerTest {
     public void initialize() {
         bookingService = Mockito.mock(BookingService.class);
         BookingController bookingController = new BookingController(bookingService);
-        mockMvc = MockMvcBuilders.standaloneSetup(bookingController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(bookingController)
+                .setControllerAdvice(ControllerExceptionHandler.class)
+                .build();
         mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"));
@@ -162,5 +165,9 @@ public class BookingControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/bookings/owner")
                         .header("X-Sharer-User-Id", 1L))
                 .andExpect(MockMvcResultMatchers.status().isOk());
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/bookings/owner?state=UNSUPPORTED_STATUS")
+                        .header("X-Sharer-User-Id", 1L))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 }

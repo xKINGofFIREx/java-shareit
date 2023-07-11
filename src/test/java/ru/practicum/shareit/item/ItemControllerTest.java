@@ -15,6 +15,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.practicum.shareit.comment.Comment;
 import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.comment.mapper.CommentMapper;
+import ru.practicum.shareit.exception.ControllerExceptionHandler;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
@@ -35,7 +37,9 @@ public class ItemControllerTest {
     public void initialize() {
         itemService = Mockito.mock(ItemService.class);
         ItemController itemController = new ItemController(itemService);
-        mockMvc = MockMvcBuilders.standaloneSetup(itemController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(itemController)
+                .setControllerAdvice(ControllerExceptionHandler.class)
+                .build();
         mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"));
@@ -145,6 +149,14 @@ public class ItemControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$[1].description", Matchers.is(item1.getDescription())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[1].available", Matchers.is(item1.isAvailable())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[1].owner.name", Matchers.is(item1.getOwner().getName())));
+
+        Mockito
+                .when(itemService.findAll(1L, 0, 0))
+                .thenThrow(ValidationException.class);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/items?from=0&size=0")
+                        .header("X-Sharer-User-Id", 1L))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test
@@ -171,6 +183,13 @@ public class ItemControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$[1].description", Matchers.is(item1.getDescription())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[1].available", Matchers.is(item1.isAvailable())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[1].owner.name", Matchers.is(item1.getOwner().getName())));
+
+        Mockito
+                .when(itemService.getItemByText("test", 0, 0))
+                .thenThrow(ValidationException.class);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/items/search?text=test&from=0&size=0"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test
