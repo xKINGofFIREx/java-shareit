@@ -11,6 +11,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import ru.practicum.shareit.exception.InvalidArgumentException;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import java.nio.charset.StandardCharsets;
@@ -49,11 +51,13 @@ public class UserControllerTest {
     @Test
     public void addUserTest() throws Exception {
         UserDto userDto = new UserDto(1, "test", "test@mail.ru");
+
         Mockito
                 .when(userService.addUser(userDto))
                 .thenReturn(userDto);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/users").content(mapper.writeValueAsString(userDto))
+        mockMvc.perform(MockMvcRequestBuilders.post("/users")
+                        .content(mapper.writeValueAsString(userDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
