@@ -121,22 +121,22 @@ public class BookingService {
 
         switch (state) {
             case CURRENT:
-                bookings = bookingRepository.findBookingsByItemIdsCurrent(bookingIds, now);
+                bookings = bookingRepository.findBookingsByBookingIdsCurrent(bookingIds, now);
                 break;
             case PAST:
-                bookings = bookingRepository.findBookingsByItemIdsPast(bookingIds, now);
+                bookings = bookingRepository.findBookingsByBookingIdsPast(bookingIds, now);
                 break;
             case FUTURE:
-                bookings = bookingRepository.findBookingsByItemIdsFuture(bookingIds, now);
+                bookings = bookingRepository.findBookingsByBookingIdsFuture(bookingIds, now);
                 break;
             case WAITING:
-                bookings = bookingRepository.findBookingsByItemIdsAndStatus(bookingIds, BookingStatus.WAITING);
+                bookings = bookingRepository.findBookingsByBookingIdsAndStatus(bookingIds, BookingStatus.WAITING);
                 break;
             case REJECTED:
-                bookings = bookingRepository.findBookingsByItemIdsAndStatus(bookingIds, BookingStatus.REJECTED);
+                bookings = bookingRepository.findBookingsByBookingIdsAndStatus(bookingIds, BookingStatus.REJECTED);
                 break;
             default:
-                bookings = bookingRepository.findBookingsByItemIds(bookingIds);
+                bookings = bookingRepository.findBookingsByBookingIds(bookingIds);
         }
 
         if (from == null || size == null)

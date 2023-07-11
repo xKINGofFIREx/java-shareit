@@ -19,22 +19,22 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findBookingsByItemOwnerId(@Param("ownerId") long ownerId);
 
     @Query("select b from Booking b where b.id in :bookingIds and b.status = :status")
-    List<Booking> findBookingsByItemIdsAndStatus(@Param("bookingIds") Iterable<Long> bookingIds,
-                                                 @Param("status") BookingStatus status);
+    List<Booking> findBookingsByBookingIdsAndStatus(@Param("bookingIds") Iterable<Long> bookingIds,
+                                                    @Param("status") BookingStatus status);
 
     @Query("select b from Booking b where b.id in :bookingIds")
-    List<Booking> findBookingsByItemIds(@Param("bookingIds") Iterable<Long> bookingIds);
+    List<Booking> findBookingsByBookingIds(@Param("bookingIds") Iterable<Long> bookingIds);
 
     @Query("select b from Booking b where b.id in :bookingIds and (b.start <= :now and b.end >= :now)")
-    List<Booking> findBookingsByItemIdsCurrent(@Param("bookingIds") Iterable<Long> bookingIds,
-                                               @Param("now") LocalDateTime now);
+    List<Booking> findBookingsByBookingIdsCurrent(@Param("bookingIds") Iterable<Long> bookingIds,
+                                                  @Param("now") LocalDateTime now);
 
     @Query("select b from Booking b where b.id in :bookingIds and b.start >= :now")
-    List<Booking> findBookingsByItemIdsFuture(@Param("bookingIds") Iterable<Long> bookingIds,
-                                              @Param("now") LocalDateTime now);
+    List<Booking> findBookingsByBookingIdsFuture(@Param("bookingIds") Iterable<Long> bookingIds,
+                                                 @Param("now") LocalDateTime now);
 
     @Query("select b from Booking b where b.id in :bookingIds and b.end <= :now")
-    List<Booking> findBookingsByItemIdsPast(@Param("bookingIds") Iterable<Long> bookingIds,
-                                            @Param("now") LocalDateTime now);
+    List<Booking> findBookingsByBookingIdsPast(@Param("bookingIds") Iterable<Long> bookingIds,
+                                               @Param("now") LocalDateTime now);
 
 }
