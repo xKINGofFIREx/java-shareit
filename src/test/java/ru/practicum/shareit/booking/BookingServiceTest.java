@@ -227,34 +227,35 @@ public class BookingServiceTest {
         Assertions.assertEquals(BookingMapper.toBookingDtos(List.of(booking)),
                 bookingService.getOwnerBookings(State.REJECTED, 1L, null, null));
 
-        LocalDateTime current = LocalDateTime.now();
-        booking.setStart(current);
+        booking.setStart(LocalDateTime.now().minusHours(1));
+        booking.setEnd(LocalDateTime.now().plusHours(1));
 
         Mockito
-                .when(bookingRepository.findBookingsByBookingIdsCurrent(List.of(booking.getId()), current))
+                .when(bookingRepository.findBookingsByBookingIdsCurrent(List.of(booking.getId()), LocalDateTime.now()))
                 .thenReturn(List.of(booking));
 
         Assertions.assertEquals(BookingMapper.toBookingDtos(List.of(booking)),
-                bookingService.getOwnerBookings(State.REJECTED, 1L, null, null));
+                bookingService.getOwnerBookings(State.CURRENT, 1L, null, null));
 
-        LocalDateTime past = LocalDateTime.now().minusSeconds(10);
-        booking.setEnd(past);
+        booking.setStart(LocalDateTime.now().minusDays(1));
+        booking.setEnd(LocalDateTime.now().minusHours(2));
 
         Mockito
-                .when(bookingRepository.findBookingsByBookingIdsPast(List.of(booking.getId()), current))
+                .when(bookingRepository.findBookingsByBookingIdsPast(List.of(booking.getId()), LocalDateTime.now()))
                 .thenReturn(List.of(booking));
 
+
         Assertions.assertEquals(BookingMapper.toBookingDtos(List.of(booking)),
-                bookingService.getOwnerBookings(State.REJECTED, 1L, null, null));
+                bookingService.getOwnerBookings(State.PAST, 1L, null, null));
 
         LocalDateTime future = LocalDateTime.now().plusSeconds(10);
         booking.setStart(future);
 
         Mockito
-                .when(bookingRepository.findBookingsByBookingIdsFuture(List.of(booking.getId()), current))
+                .when(bookingRepository.findBookingsByBookingIdsFuture(List.of(booking.getId()), LocalDateTime.now()))
                 .thenReturn(List.of(booking));
 
         Assertions.assertEquals(BookingMapper.toBookingDtos(List.of(booking)),
-                bookingService.getOwnerBookings(State.REJECTED, 1L, null, null));
+                bookingService.getOwnerBookings(State.FUTURE, 1L, null, null));
     }
 }
