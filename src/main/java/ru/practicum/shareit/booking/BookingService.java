@@ -63,7 +63,6 @@ public class BookingService {
             throw new ValidationException("Попытка изменения изменненного статуса вещи ");
         }
 
-
         if (approved)
             booking.setStatus(BookingStatus.APPROVED);
         else

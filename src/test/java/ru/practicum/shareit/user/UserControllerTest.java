@@ -40,6 +40,7 @@ public class UserControllerTest {
     @Test
     public void getUserTest() throws Exception {
         UserDto userDto = new UserDto(1, "test", "test@mail.ru");
+
         Mockito
                 .when(userService.getUser(1))
                 .thenReturn(userDto);
