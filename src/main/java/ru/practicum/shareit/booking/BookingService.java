@@ -75,8 +75,7 @@ public class BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Букинга с таким номером не существует"));
 
-        if (booking.getBooker().getId() != userId
-                && booking.getItem().getOwner().getId() != userId) {
+        if (booking.getBooker().getId() != userId && booking.getItem().getOwner().getId() != userId) {
             throw new NotFoundException("У данного пользователя нет букинга - " + bookingId);
         }
 
@@ -88,9 +87,7 @@ public class BookingService {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователя с таким номером не существует"));
 
-        List<Long> bookingIds = bookingRepository.findBookingsByBookerId(userId)
-                .stream()
-                .map(Booking::getId)
+        List<Long> bookingIds = bookingRepository.findBookingsByBookerId(userId).stream().map(Booking::getId)
                 .collect(Collectors.toList());
 
         return BookingMapper.toBookingDtos(getBookingsByState(bookingIds, state, from, size));
@@ -101,9 +98,7 @@ public class BookingService {
         userRepository.findById(ownerId)
                 .orElseThrow(() -> new NotFoundException("Владельца вещи с таким номером не существует"));
 
-        List<Long> bookingIds = bookingRepository.findBookingsByItemOwnerId(ownerId)
-                .stream()
-                .map(Booking::getId)
+        List<Long> bookingIds = bookingRepository.findBookingsByItemOwnerId(ownerId).stream().map(Booking::getId)
                 .collect(Collectors.toList());
 
         return BookingMapper.toBookingDtos(getBookingsByState(bookingIds, state, from, size));
@@ -139,14 +134,8 @@ public class BookingService {
         }
 
         if (from == null || size == null)
-            return bookings.stream()
-                    .sorted(Comparator.comparing(Booking::getStart).reversed())
-                    .collect(Collectors.toList());
+            return bookings.stream().sorted(Comparator.comparing(Booking::getStart).reversed()).collect(Collectors.toList());
 
-        return bookings.stream()
-                .sorted(Comparator.comparing(Booking::getStart).reversed())
-                .skip(from)
-                .limit(size)
-                .collect(Collectors.toList());
+        return bookings.stream().sorted(Comparator.comparing(Booking::getStart).reversed()).skip(from).limit(size).collect(Collectors.toList());
     }
 }

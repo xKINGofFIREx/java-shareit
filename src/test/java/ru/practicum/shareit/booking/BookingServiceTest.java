@@ -65,6 +65,7 @@ public class BookingServiceTest {
                 .thenReturn(booking);
 
         BookingDto bookingDto = BookingMapper.toBookingDto(booking);
+
         Assertions.assertEquals(bookingDto, bookingService.createBooking(bookingDto, 2L));
     }
 
@@ -99,6 +100,7 @@ public class BookingServiceTest {
 
         BookingDto bookingDto = BookingMapper.toBookingDto(booking);
         bookingDto.setStatus(BookingStatus.APPROVED);
+
         Assertions.assertEquals(bookingDto, bookingService.patchBooking(1L, true, 1L));
     }
 
@@ -124,6 +126,7 @@ public class BookingServiceTest {
                 .thenReturn(Optional.of(booking));
 
         BookingDto bookingDto = BookingMapper.toBookingDto(booking);
+
         Assertions.assertEquals(bookingDto, bookingService.getBookingById(1L, 2L));
     }
 
@@ -189,5 +192,69 @@ public class BookingServiceTest {
 
         Assertions.assertEquals(BookingMapper.toBookingDtos(List.of(booking)),
                 bookingService.getOwnerBookings(State.WAITING, 1L, null, null));
+    }
+
+    @Test
+    public void getBookingsByState() throws ValidationException, NotFoundException {
+        Booking booking = new Booking();
+        booking.setId(1L);
+        booking.setEnd(LocalDateTime.now().plusSeconds(10));
+
+        Item item = new Item();
+        item.setId(1L);
+        item.setOwner(new User(1L, "Owner", "owner@mail.ru"));
+        item.setAvailable(true);
+
+        User user = new User();
+        user.setId(2L);
+
+        booking.setItem(item);
+        booking.setBooker(user);
+
+        Mockito
+                .when(userRepository.findById(1L))
+                .thenReturn(Optional.of(item.getOwner()));
+        Mockito
+                .when(bookingRepository.findBookingsByItemOwnerId(1L))
+                .thenReturn(List.of(booking));
+
+        booking.setStatus(BookingStatus.REJECTED);
+
+        Mockito
+                .when(bookingRepository.findBookingsByBookingIdsAndStatus(List.of(booking.getId()), BookingStatus.REJECTED))
+                .thenReturn(List.of(booking));
+
+        Assertions.assertEquals(BookingMapper.toBookingDtos(List.of(booking)),
+                bookingService.getOwnerBookings(State.REJECTED, 1L, null, null));
+
+        LocalDateTime current = LocalDateTime.now();
+        booking.setStart(current);
+
+        Mockito
+                .when(bookingRepository.findBookingsByBookingIdsCurrent(List.of(booking.getId()), current))
+                .thenReturn(List.of(booking));
+
+        Assertions.assertEquals(BookingMapper.toBookingDtos(List.of(booking)),
+                bookingService.getOwnerBookings(State.REJECTED, 1L, null, null));
+
+        LocalDateTime past = LocalDateTime.now().minusSeconds(10);
+        booking.setEnd(past);
+
+        Mockito
+                .when(bookingRepository.findBookingsByBookingIdsPast(List.of(booking.getId()), current))
+                .thenReturn(List.of(booking));
+
+        Assertions.assertEquals(BookingMapper.toBookingDtos(List.of(booking)),
+                bookingService.getOwnerBookings(State.REJECTED, 1L, null, null));
+
+        LocalDateTime future = LocalDateTime.now().plusSeconds(10);
+        booking.setStart(future);
+
+        Mockito
+                .when(bookingRepository.findBookingsByBookingIdsFuture(List.of(booking.getId()), current))
+                .thenReturn(List.of(booking));
+
+        Assertions.assertEquals(BookingMapper.toBookingDtos(List.of(booking)),
+                bookingService.getOwnerBookings(State.REJECTED, 1L, null, null));
     }
 }

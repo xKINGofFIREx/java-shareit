@@ -40,9 +40,8 @@ public class ItemService {
         if (userId == itemDto.getOwner().getId())
             setBookings(itemId, itemDto);
 
-        itemDto.setComments(CommentMapper.toCommentDtos(
-                commentRepository.findAllCommentsByItemId(itemId)
-                        .orElse(new ArrayList<>())));
+        itemDto.setComments(CommentMapper.toCommentDtos(commentRepository.findAllCommentsByItemId(itemId)
+                .orElse(new ArrayList<>())));
         return itemDto;
     }
 
@@ -54,8 +53,7 @@ public class ItemService {
         item.setOwner(owner);
 
         if (itemDto.getRequestId() != 0)
-            item.setRequest(itemRepository.findRequestById(itemDto.getRequestId())
-                    .orElseThrow(() -> new NotFoundException("Запрос не найден")));
+            item.setRequest(itemRepository.findRequestById(itemDto.getRequestId()).orElseThrow(() -> new NotFoundException("Запрос не найден")));
 
         return ItemMapper.toItemDto(itemRepository.save(item));
     }
@@ -97,9 +95,8 @@ public class ItemService {
 
         for (ItemDto itemDto : itemDtos) {
             setBookings(itemDto.getId(), itemDto);
-            itemDto.setComments(CommentMapper.toCommentDtos(
-                    commentRepository.findAllCommentsByItemId(itemDto.getId())
-                            .orElse(new ArrayList<>())));
+            itemDto.setComments(CommentMapper.toCommentDtos(commentRepository.findAllCommentsByItemId(itemDto.getId())
+                    .orElse(new ArrayList<>())));
         }
 
         return itemDtos.stream()
@@ -149,11 +146,9 @@ public class ItemService {
         List<Booking> lastBooking = itemRepository.findLastBookingByItemId(itemId, LocalDateTime.now())
                 .orElse(null);
 
-        if (nextBooking != null && nextBooking.size() > 0
-                && nextBooking.get(0).getStatus() == BookingStatus.APPROVED)
+        if (nextBooking != null && nextBooking.size() > 0 && nextBooking.get(0).getStatus() == BookingStatus.APPROVED)
             itemDto.setNextBooking(BookingMapper.toBookingDto(nextBooking.get(0)));
-        if (lastBooking != null && lastBooking.size() > 0
-                && lastBooking.get(0).getStatus() == BookingStatus.APPROVED)
+        if (lastBooking != null && lastBooking.size() > 0 && lastBooking.get(0).getStatus() == BookingStatus.APPROVED)
             itemDto.setLastBooking(BookingMapper.toBookingDto(lastBooking.get(lastBooking.size() - 1)));
     }
 }

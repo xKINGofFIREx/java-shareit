@@ -100,7 +100,7 @@ public class ItemServiceTest {
 
     @Test
     public void deleteItemTest() {
-        itemRepository.deleteById(1L);
+        Assertions.assertAll(() -> itemService.deleteItem(1L));
 
         Mockito.verify(itemRepository, Mockito.times(1)).deleteById(1L);
     }
