@@ -20,6 +20,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+
 public class BookingServiceTest {
     private BookingRepository bookingRepository;
     private UserRepository userRepository;
@@ -227,32 +230,22 @@ public class BookingServiceTest {
         Assertions.assertEquals(BookingMapper.toBookingDtos(List.of(booking)),
                 bookingService.getOwnerBookings(State.REJECTED, 1L, null, null));
 
-        booking.setStart(LocalDateTime.now().minusHours(1));
-        booking.setEnd(LocalDateTime.now().plusHours(1));
-
         Mockito
-                .when(bookingRepository.findBookingsByBookingIdsCurrent(List.of(booking.getId()), LocalDateTime.now()))
+                .when(bookingRepository.findBookingsByBookingIdsCurrent(anyList(), any(LocalDateTime.class)))
                 .thenReturn(List.of(booking));
 
         Assertions.assertEquals(BookingMapper.toBookingDtos(List.of(booking)),
                 bookingService.getOwnerBookings(State.CURRENT, 1L, null, null));
 
-        booking.setStart(LocalDateTime.now().minusDays(1));
-        booking.setEnd(LocalDateTime.now().minusHours(2));
-
         Mockito
-                .when(bookingRepository.findBookingsByBookingIdsPast(List.of(booking.getId()), LocalDateTime.now()))
+                .when(bookingRepository.findBookingsByBookingIdsPast(anyList(), any(LocalDateTime.class)))
                 .thenReturn(List.of(booking));
-
 
         Assertions.assertEquals(BookingMapper.toBookingDtos(List.of(booking)),
                 bookingService.getOwnerBookings(State.PAST, 1L, null, null));
 
-        LocalDateTime future = LocalDateTime.now().plusSeconds(10);
-        booking.setStart(future);
-
         Mockito
-                .when(bookingRepository.findBookingsByBookingIdsFuture(List.of(booking.getId()), LocalDateTime.now()))
+                .when(bookingRepository.findBookingsByBookingIdsFuture(anyList(), any(LocalDateTime.class)))
                 .thenReturn(List.of(booking));
 
         Assertions.assertEquals(BookingMapper.toBookingDtos(List.of(booking)),
