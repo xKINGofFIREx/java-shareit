@@ -25,8 +25,9 @@ public class RequestJsonTest {
         mapper.findAndRegisterModules();
         mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"));
         JacksonTester.initFields(this, mapper);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
-        LocalDateTime now = LocalDateTime.parse(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
+        LocalDateTime now = LocalDateTime.parse(LocalDateTime.now().format(formatter));
 
         ItemRequestDto itemRequestDto = new ItemRequestDto(
                 1L,
@@ -40,7 +41,7 @@ public class RequestJsonTest {
         assertThat(result).extractingJsonPathNumberValue("$.id").isEqualTo(1);
         assertThat(result).extractingJsonPathStringValue("$.description").isEqualTo("test");
         assertThat(result).extractingJsonPathStringValue("$.requester.email").isEqualTo("test@mail.ru");
-        assertThat(result).extractingJsonPathStringValue("$.created").isEqualTo(now.toString());
+        assertThat(result).extractingJsonPathStringValue("$.created").isEqualTo(now.format(formatter));
 
     }
 }

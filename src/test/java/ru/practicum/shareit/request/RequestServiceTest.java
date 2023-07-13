@@ -10,6 +10,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.mapper.RequestMapper;
 import ru.practicum.shareit.request.model.ItemRequest;
@@ -78,18 +80,26 @@ public class RequestServiceTest {
 
     @Test
     public void findAllRequestsTest() throws ValidationException, NotFoundException {
-        User owner = new User(1L, "requester", "requester@mail.ru");
+        User requester = new User(1L, "requester", "requester@mail.ru");
         ItemRequest itemRequest = new ItemRequest();
         itemRequest.setId(1L);
-        itemRequest.setRequester(owner);
+        itemRequest.setRequester(requester);
         itemRequest.setCreated(LocalDateTime.now());
         itemRequest.setDescription("test-request");
 
         ItemRequest itemRequest1 = new ItemRequest();
         itemRequest1.setId(2L);
-        itemRequest1.setRequester(owner);
+        itemRequest1.setRequester(requester);
         itemRequest1.setCreated(LocalDateTime.now().plusSeconds(1));
         itemRequest1.setDescription("test-request");
+
+        Item item = new Item(1L, "item", "test", true,
+                new User(3L, "itemOwner", "owner@user.ru"),
+                itemRequest);
+
+        Mockito
+                .when(itemRequestRepository.findItemsByRequests(List.of(itemRequest, itemRequest1)))
+                .thenReturn(List.of(item));
 
         Mockito
                 .when(itemRequestRepository.getUserIfExist(2L))
@@ -99,8 +109,9 @@ public class RequestServiceTest {
         Page<ItemRequest> page = new PageImpl<>(List.of(itemRequest, itemRequest1));
 
         Mockito
-                .when(itemRequestRepository.findAll(PageRequest.of(0, 20, Sort.by("created"))))
+                .when(itemRequestRepository.findAllRequestsExceptUserId(2L, PageRequest.of(0, 20, Sort.by("created"))))
                 .thenReturn(page);
+        itemRequestDtos.get(0).getItems().add(ItemMapper.toItemDto(item));
 
         Assertions.assertEquals(itemRequestDtos, itemRequestService.findAllRequests(0, 20, 2L));
     }

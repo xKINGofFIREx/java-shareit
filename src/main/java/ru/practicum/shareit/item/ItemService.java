@@ -92,11 +92,14 @@ public class ItemService {
             items = itemRepository.findAllByOwnerId(sharerId, PageRequest.of(from, size)).getContent();
 
         List<ItemDto> itemDtos = ItemMapper.toItemDtos(items);
+        List<CommentDto> commentDtos = CommentMapper.toCommentDtos(commentRepository.findAll());
 
         for (ItemDto itemDto : itemDtos) {
             setBookings(itemDto.getId(), itemDto);
-            itemDto.setComments(CommentMapper.toCommentDtos(commentRepository.findAllCommentsByItemId(itemDto.getId())
-                    .orElse(new ArrayList<>())));
+            for (CommentDto commentDto : commentDtos) {
+                if (commentDto.getItem().getId() == itemDto.getId())
+                    itemDto.getComments().add(commentDto);
+            }
         }
 
         return itemDtos.stream()

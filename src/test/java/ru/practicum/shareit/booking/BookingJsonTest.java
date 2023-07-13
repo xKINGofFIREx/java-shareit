@@ -26,8 +26,9 @@ public class BookingJsonTest {
         mapper.findAndRegisterModules();
         mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"));
         JacksonTester.initFields(this, mapper);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
-        LocalDateTime now = LocalDateTime.parse(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
+        LocalDateTime now = LocalDateTime.parse(LocalDateTime.now().format(formatter));
 
         BookingDto bookingDto = new BookingDto(
                 1L,
@@ -42,8 +43,8 @@ public class BookingJsonTest {
         JsonContent<BookingDto> result = json.write(bookingDto);
 
         assertThat(result).extractingJsonPathNumberValue("$.id").isEqualTo(1);
-        assertThat(result).extractingJsonPathStringValue("$.start").isEqualTo(now.toString());
-        assertThat(result).extractingJsonPathStringValue("$.end").isEqualTo(now.toString());
+        assertThat(result).extractingJsonPathStringValue("$.start").isEqualTo(now.format(formatter));
+        assertThat(result).extractingJsonPathStringValue("$.end").isEqualTo(now.format(formatter));
         assertThat(result).extractingJsonPathStringValue("$.booker.email").isEqualTo("test@mail.ru");
         assertThat(result).extractingJsonPathNumberValue("$.bookerId").isEqualTo(1);
         assertThat(result).extractingJsonPathNumberValue("$.itemId").isEqualTo(1);

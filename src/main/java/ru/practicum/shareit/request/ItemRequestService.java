@@ -7,6 +7,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.mapper.RequestMapper;
@@ -33,14 +34,15 @@ public class ItemRequestService {
     }
 
     public List<ItemRequestDto> findAllOwnerRequests(long userId) throws NotFoundException {
-        List<ItemRequestDto> itemRequestDtos = RequestMapper.toItemRequestDtos(itemRequestRepository
-                .findAllRequestsByUserId(userId));
+        List<ItemRequest> itemRequests = itemRequestRepository
+                .findAllRequestsByUserId(userId);
+
+        List<ItemRequestDto> itemRequestDtos = setItems(itemRequests);
 
         itemRequestRepository.getUserIfExist(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 
         return itemRequestDtos.stream()
-                .peek(ir -> ir.setItems(ItemMapper.toItemDtos(itemRequestRepository.getItemsByRequestId(ir.getId()))))
                 .sorted(Comparator.comparing(ItemRequestDto::getCreated))
                 .collect(Collectors.toList());
     }
@@ -56,15 +58,8 @@ public class ItemRequestService {
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 
         Pageable pageable = PageRequest.of(from, size, Sort.by("created"));
-
-        List<ItemRequestDto> itemRequestDtos = RequestMapper
-                .toItemRequestDtos(itemRequestRepository.findAll(pageable).getContent());
-
-        return itemRequestDtos.stream()
-                .filter(ir -> ir.getRequester().getId() != userId)
-                .peek(ir -> ir.setItems(ItemMapper.toItemDtos(itemRequestRepository.getItemsByRequestId(ir.getId()))))
-                .collect(Collectors.toList());
-
+        List<ItemRequest> itemRequest = itemRequestRepository.findAllRequestsExceptUserId(userId, pageable).getContent();
+        return setItems(itemRequest);
     }
 
     public ItemRequestDto getRequestById(long requestId, long userId) throws NotFoundException {
@@ -75,5 +70,20 @@ public class ItemRequestService {
 
         itemRequestDto.setItems(ItemMapper.toItemDtos(itemRequestRepository.getItemsByRequestId(requestId)));
         return itemRequestDto;
+    }
+
+    private List<ItemRequestDto> setItems(List<ItemRequest> itemRequests) {
+        List<ItemDto> itemDtos = ItemMapper.toItemDtos(itemRequestRepository.findItemsByRequests(itemRequests));
+
+        List<ItemRequestDto> itemRequestDtos = RequestMapper.toItemRequestDtos(itemRequests);
+
+        for (ItemRequestDto itemRequestDto : itemRequestDtos) {
+            for (ItemDto itemDto : itemDtos) {
+                if (itemDto.getRequestId() == itemRequestDto.getId())
+                    itemRequestDto.getItems().add(itemDto);
+            }
+        }
+
+        return itemRequestDtos;
     }
 }

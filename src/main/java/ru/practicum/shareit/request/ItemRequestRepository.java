@@ -25,4 +25,10 @@ public interface ItemRequestRepository extends JpaRepository<ItemRequest, Long> 
 
     @Query("select r from ItemRequest r where r.requester.id = :userId")
     Page<ItemRequest> findAllRequestsByUserId(@Param("userId") long userId, Pageable pageable);
+
+    @Query("select r from ItemRequest r where r.requester.id != :userId")
+    Page<ItemRequest> findAllRequestsExceptUserId(@Param("userId") long userId, Pageable pageable);
+
+    @Query("select i from Item i where i.request in :requests")
+    List<Item> findItemsByRequests(@Param("requests") List<ItemRequest> itemRequests);
 }
