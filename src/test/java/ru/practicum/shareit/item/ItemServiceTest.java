@@ -107,10 +107,17 @@ public class ItemServiceTest {
 
     @Test
     public void findAllTest() throws ValidationException {
+        User user = new User(1L, "user", "test@mail.ru");
         Item item = new Item(1L, "test", "test", true,
-                new User(1L, "user", "test@mail.ru"), null);
+                user, null);
         Item item1 = new Item(2L, "test1", "test1", true,
-                new User(1L, "user", "test@mail.ru"), null);
+                user, null);
+        Comment comment = new Comment(1L, "comment", LocalDateTime.now(),
+                item, new User(2L, "com", "com@mail.ru"));
+
+        Mockito
+                .when(commentRepository.findAll())
+                        .thenReturn(List.of(comment));
 
         Mockito
                 .when(itemRepository.findAllByOwnerId(1L))
@@ -125,6 +132,8 @@ public class ItemServiceTest {
                 .thenReturn(Optional.of(new ArrayList<>()));
 
         List<ItemDto> itemDtos = ItemMapper.toItemDtos(Arrays.asList(item, item1));
+
+        itemDtos.get(0).getComments().add(CommentMapper.toCommentDto(comment));
 
         Assertions.assertEquals(itemDtos, itemService.findAll(1L, null, null));
         Assertions.assertThrows(ValidationException.class, () -> itemService.findAll(1L, 0, 0));
