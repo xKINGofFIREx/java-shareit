@@ -1,9 +1,7 @@
 version: '3.8'
 services:
   gateway:
-    build:
-      dockerfile:
-        gateway/Dockerfile
+    build: .
     image:
       gateway
     container_name:
@@ -17,9 +15,7 @@ services:
       - SHAREIT_SERVER_URL=http://server:9090
 
   server:
-    build:
-      dockerfile:
-        server/Dockerfile
+    build: .
     image:
       server
     container_name:
