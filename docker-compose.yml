@@ -5,9 +5,9 @@ services:
       dockerfile:
         gateway/Dockerfile
     image:
-      shareit-gateway
+      gateway
     container_name:
-      shareit-gateway
+      gateway
     ports:
       - "8080:8080"
     depends_on:
@@ -21,9 +21,9 @@ services:
       dockerfile:
         server/Dockerfile
     image:
-      shareit-server
+      server
     container_name:
-      shareit-server
+      server
     ports:
       - "9090:9090"
     depends_on:
