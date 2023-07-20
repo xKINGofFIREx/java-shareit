@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
@@ -31,15 +32,16 @@ public class ItemService {
     private final CommentRepository commentRepository;
 
     public ItemDto getItem(long itemId, long userId) throws NotFoundException {
+
+
         ItemDto itemDto = ItemMapper.toItemDto(itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещи с таким номером не существует")));
 
         if (userId == itemDto.getOwner().getId())
             setBookings(itemId, itemDto);
 
-        itemDto.setComments(CommentMapper.toCommentDtos(
-                commentRepository.findAllCommentsByItemId(itemId)
-                        .orElse(new ArrayList<>())));
+        itemDto.setComments(CommentMapper.toCommentDtos(commentRepository.findAllCommentsByItemId(itemId)
+                .orElse(new ArrayList<>())));
         return itemDto;
     }
 
@@ -49,6 +51,9 @@ public class ItemService {
         User owner = userRepository.findById(sharerId)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         item.setOwner(owner);
+
+        if (itemDto.getRequestId() != 0)
+            item.setRequest(itemRepository.findRequestById(itemDto.getRequestId()).orElseThrow(() -> new NotFoundException("Запрос не найден")));
 
         return ItemMapper.toItemDto(itemRepository.save(item));
     }
@@ -75,14 +80,26 @@ public class ItemService {
         itemRepository.deleteById(itemId);
     }
 
-    public List<ItemDto> findAll(long sharerId) {
-        List<ItemDto> itemDtos = ItemMapper.toItemDtos(itemRepository.findAllByOwnerId(sharerId));
+    public List<ItemDto> findAll(long sharerId, Integer from, Integer size) throws ValidationException {
+
+        if (from != null && from < 0 || size != null && size < 1)
+            throw new ValidationException("Ошибка пагинации");
+
+        List<Item> items;
+        if (from == null || size == null)
+            items = itemRepository.findAllByOwnerId(sharerId);
+        else
+            items = itemRepository.findAllByOwnerId(sharerId, PageRequest.of(from, size)).getContent();
+
+        List<ItemDto> itemDtos = ItemMapper.toItemDtos(items);
+        List<CommentDto> commentDtos = CommentMapper.toCommentDtos(commentRepository.findAll());
 
         for (ItemDto itemDto : itemDtos) {
             setBookings(itemDto.getId(), itemDto);
-            itemDto.setComments(CommentMapper.toCommentDtos(
-                    commentRepository.findAllCommentsByItemId(itemDto.getId())
-                            .orElse(new ArrayList<>())));
+            for (CommentDto commentDto : commentDtos) {
+                if (commentDto.getItem().getId() == itemDto.getId())
+                    itemDto.getComments().add(commentDto);
+            }
         }
 
         return itemDtos.stream()
@@ -90,10 +107,20 @@ public class ItemService {
                 .collect(Collectors.toList());
     }
 
-    public List<ItemDto> getItemByText(String text) {
+    public List<ItemDto> getItemByText(String text, Integer from, Integer size) throws ValidationException {
         if (text.equals(""))
             return new ArrayList<>();
-        return ItemMapper.toItemDtos(itemRepository.findAll())
+
+        if (from != null && from < 0 || size != null && size < 1)
+            throw new ValidationException("Ошибка пагинации");
+
+        List<Item> items;
+        if (from == null || size == null)
+            items = itemRepository.findAll();
+        else
+            items = itemRepository.findAll(PageRequest.of(from, size)).getContent();
+
+        return ItemMapper.toItemDtos(items)
                 .stream()
                 .filter(i -> i.getDescription().toLowerCase().contains(text.toLowerCase()) && i.getAvailable())
                 .collect(Collectors.toList());
@@ -122,11 +149,9 @@ public class ItemService {
         List<Booking> lastBooking = itemRepository.findLastBookingByItemId(itemId, LocalDateTime.now())
                 .orElse(null);
 
-        if (nextBooking != null && nextBooking.size() > 0
-                && nextBooking.get(0).getStatus() == BookingStatus.APPROVED)
+        if (nextBooking != null && nextBooking.size() > 0 && nextBooking.get(0).getStatus() == BookingStatus.APPROVED)
             itemDto.setNextBooking(BookingMapper.toBookingDto(nextBooking.get(0)));
-        if (lastBooking != null && lastBooking.size() > 0
-                && lastBooking.get(0).getStatus() == BookingStatus.APPROVED)
+        if (lastBooking != null && lastBooking.size() > 0 && lastBooking.get(0).getStatus() == BookingStatus.APPROVED)
             itemDto.setLastBooking(BookingMapper.toBookingDto(lastBooking.get(lastBooking.size() - 1)));
     }
 }

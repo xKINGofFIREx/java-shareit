@@ -12,25 +12,29 @@ import java.util.List;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
-    List<Booking> findBookingsByBooker_Id(long bookerId);
+    @Query("select b from Booking b where b.booker.id = :bookerId")
+    List<Booking> findBookingsByBookerId(@Param("bookerId") long bookerId);
 
-    @Query("select b from Booking b where b.item.id in :itemIds and b.status = :status")
-    List<Booking> findBookingsByItemIdsAndStatus(@Param("itemIds") Iterable<Long> itemIds,
-                                                 @Param("status") BookingStatus status);
+    @Query("select b from Booking b where b.item.owner.id = :ownerId")
+    List<Booking> findBookingsByItemOwnerId(@Param("ownerId") long ownerId);
 
-    @Query("select b from Booking b where b.item.id in :itemIds")
-    List<Booking> findBookingsByItemIds(@Param("itemIds") Iterable<Long> itemIds);
+    @Query("select b from Booking b where b.id in :bookingIds and b.status = :status")
+    List<Booking> findBookingsByBookingIdsAndStatus(@Param("bookingIds") Iterable<Long> bookingIds,
+                                                    @Param("status") BookingStatus status);
 
-    @Query("select b from Booking b where b.item.id in :itemIds and (b.start <= :now and b.end >= :now)")
-    List<Booking> findBookingsByItemIdsCurrent(@Param("itemIds") Iterable<Long> itemIds,
+    @Query("select b from Booking b where b.id in :bookingIds")
+    List<Booking> findBookingsByBookingIds(@Param("bookingIds") Iterable<Long> bookingIds);
+
+    @Query("select b from Booking b where b.id in :bookingIds and (b.start <= :now and b.end >= :now)")
+    List<Booking> findBookingsByBookingIdsCurrent(@Param("bookingIds") Iterable<Long> bookingIds,
+                                                  @Param("now") LocalDateTime now);
+
+    @Query("select b from Booking b where b.id in :bookingIds and b.start >= :now")
+    List<Booking> findBookingsByBookingIdsFuture(@Param("bookingIds") Iterable<Long> bookingIds,
+                                                 @Param("now") LocalDateTime now);
+
+    @Query("select b from Booking b where b.id in :bookingIds and b.end <= :now")
+    List<Booking> findBookingsByBookingIdsPast(@Param("bookingIds") Iterable<Long> bookingIds,
                                                @Param("now") LocalDateTime now);
-
-    @Query("select b from Booking b where b.item.id in :itemIds and b.start >= :now")
-    List<Booking> findBookingsByItemIdsFuture(@Param("itemIds") Iterable<Long> itemIds,
-                                              @Param("now") LocalDateTime now);
-
-    @Query("select b from Booking b where b.item.id in :itemIds and b.end <= :now")
-    List<Booking> findBookingsByItemIdsPast(@Param("itemIds") Iterable<Long> itemIds,
-                                            @Param("now") LocalDateTime now);
 
 }

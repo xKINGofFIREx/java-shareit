@@ -8,7 +8,6 @@ import java.util.List;
 
 public class ItemMapper {
 
-
     public static ItemDto toItemDto(Item item) {
         return new ItemDto(
                 item.getId(),
@@ -16,7 +15,7 @@ public class ItemMapper {
                 item.getDescription(),
                 item.isAvailable(),
                 item.getOwner(),
-                item.getRequest(),
+                item.getRequest() == null ? 0 : item.getRequest().getId(),
                 new ArrayList<>(),
                 null,
                 null
@@ -30,7 +29,7 @@ public class ItemMapper {
                 itemDto.getDescription(),
                 itemDto.getAvailable(),
                 itemDto.getOwner(),
-                itemDto.getRequest()
+                null
         );
     }
 
